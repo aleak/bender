@@ -1,11 +1,11 @@
 PATH
   remote: .
   specs:
-    roy (0.0.1)
-      activesupport
-      aws-sdk-v1
-      dotenv
-      thor
+    bender (0.0.1)
+      activesupport (~> 4.2)
+      aws-sdk-v1 (~> 1.61)
+      dotenv (~> 1.0)
+      thor (~> 0.19)
 
 GEM
   remote: https://rubygems.org/
@@ -61,9 +61,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bender!
   bundler (~> 1.7)
-  pry
-  pry-byebug
+  pry (~> 0.10)
+  pry-byebug (~> 2.0)
   rake (~> 10.0)
-  roy!
-  rspec
+  rspec (~> 2.12)

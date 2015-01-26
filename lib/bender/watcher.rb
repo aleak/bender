@@ -1,7 +1,7 @@
 module WatcherFactory
   def self.create(config, default_config)
     watcher_class = config[:name]
-    require_relative "watchers/#{watcher_class}"
+    require "bender/watchers/#{watcher_class}"
     watcher_class.classify.constantize.new(default_config)
   end
 end
@@ -26,29 +26,29 @@ class Watcher
 
   def load_queue
     @queue ||= Watcher.sqs.queues.create(
-      "#{Roy::Client.queue_prefix}-#{@options[:name]}",
+      "#{Bender::Client.queue_prefix}-#{@options[:name]}",
       @options[:create_options]
     )
   rescue Exception => ex
-    Roy.logger.error("#{self.class}: #{ex.message}#{ex.backtrace.join("\n")}")
+    Bender.logger.error("#{self.class}: #{ex.message}#{ex.backtrace.join("\n")}")
   end
 
   def subscribe
-    while Roy::Client.keep_running? do
-      Roy.logger.info("Polling #{@queue.arn} for #{self.class.to_s}")
+    while Bender::Client.keep_running? do
+      Bender.logger.info("Polling #{@queue.arn} for #{self.class.to_s}")
       @queue.poll(@options[:poll_options]) do |received_message|
         safe_perform(received_message.body)
       end
     end
   rescue Exception => ex
-    Roy.logger.error("#{self.class}: #{ex.message}#{ex.backtrace.join("\n")}")
+    Bender.logger.error("#{self.class}: #{ex.message}#{ex.backtrace.join("\n")}")
   end
 
   def publish(message)
     message = message.to_json if message.is_a? Hash
     @queue.send_message(message)
   rescue Exception => ex
-    Roy.logger.error("#{self.class}: #{ex.message}#{ex.backtrace.join("\n")}")
+    Bender.logger.error("#{self.class}: #{ex.message}#{ex.backtrace.join("\n")}")
   end
 
   private
@@ -56,12 +56,12 @@ class Watcher
   def safe_perform(json)
     message = JSON.parse(json, :symbolize_names => true) rescue :invalid
     if message == :invalid
-      Roy.logger.error("#{self.class}: Unable to parse message: #{json}")
+      Bender.logger.error("#{self.class}: Unable to parse message: #{json}")
     else
       self.perform(message)
     end
   rescue Exception => ex
-    Roy.logger.error("#{self.class}: Perform : #{ex.message}#{ex.backtrace.join("\n")}")
+    Bender.logger.error("#{self.class}: Perform : #{ex.message}#{ex.backtrace.join("\n")}")
   end
 
 end

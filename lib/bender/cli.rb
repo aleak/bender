@@ -1,9 +1,9 @@
 require 'yaml'
 require 'thor'
 require 'active_support/core_ext/hash'
-require_relative './client'
+require 'bender/client'
 
-module Roy
+module Bender
   class CLI < Thor
     class_option :config, :aliases => ["-c"], :type => :string, :required => true
 
@@ -30,7 +30,7 @@ module Roy
     def start
       load_enviroment(options[:require])
       opts = @options.symbolize_keys.slice(:timeout, :interval, :daemon, :pid_file)
-      Roy::Client.new(@options).start_watchers
+      Bender::Client.new(@options).start_watchers
     end
 
     desc "publish", "Publish a message."
@@ -40,7 +40,7 @@ module Roy
     def publish
       load_enviroment(options[:require])
       opts = @options.symbolize_keys.slice(:timeout, :interval, :daemon, :pid_file)
-      Roy::Client.new(@options).publish options[:watcher], options[:message]
+      Bender::Client.new(@options).publish options[:watcher], options[:message]
     end
 
     protected

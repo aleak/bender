@@ -2,11 +2,11 @@ require 'aws-sdk-v1'
 require 'thwait'
 require 'dotenv'
 require 'active_support/inflector'
-require_relative './watcher'
+require 'bender/watcher'
 
 Dotenv.load
 
-module Roy
+module Bender
 
   def self.logger
     @@logger ||= Logger.new(STDOUT)
@@ -39,7 +39,7 @@ module Roy
     end
 
     def start_watchers
-      Roy.logger.info("Starting Watchers - Press Ctrl+C to stop watchers...")
+      Bender.logger.info("Starting Watchers - Press Ctrl+C to stop watchers...")
       @@keep_running = true
       @threads = []
       @watchers.each do |watcher|
@@ -61,7 +61,7 @@ module Roy
       sent = @watchers.select{|w| w.class.to_s.underscore == watcher}.collect do |watcher|
         watcher.publish(message)
       end
-      Roy.logger.info("Sent #{sent.size} message(s)")
+      Bender.logger.info("Sent #{sent.size} message(s)")
     end
 
     def config
@@ -76,7 +76,7 @@ module Roy
 
     def initialize_watchers
       @watchers = @config[:watchers].collect do |watcher_config|
-        Roy.logger.info("Loading #{watcher_config[:name]}")
+        Bender.logger.info("Loading #{watcher_config[:name]}")
         WatcherFactory.create(watcher_config, self.config)
       end
     end

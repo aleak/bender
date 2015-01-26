@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+$:.unshift(File.join(File.dirname(File.dirname(__FILE__)), 'lib'))
+
+require 'bender'
+
+Bender::CLI.start(ARGV)

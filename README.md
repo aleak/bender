@@ -1,6 +1,6 @@
-# Roy
+# bender
 
-Reason for _roy_:
+Reason for _bender_:
 
 We run [Resque](https://github.com/resque/resque) workers hosted on AWS using auto scaling groups.  In order to ensure workers are always running we use the super awesome [God](www.godrb.com) gem.
 
@@ -19,7 +19,7 @@ More to follow.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'roy'
+gem 'bender'
 ```
 
 And then execute:
@@ -28,7 +28,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install roy
+    $ gem install bender
 
 ## Usage
 
@@ -36,7 +36,7 @@ TODO: Write usage instructions here
 
 ## Contributing
 
-1. Fork it ( https://github.com/aleak/roy/fork )
+1. Fork it ( https://github.com/aleak/bender/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe "Roy" do
+describe "Bender" do
 
   it "reads a config file" do
     create_options = {:create_options => {
@@ -27,17 +27,17 @@ describe "Roy" do
         }.merge(create_options).merge(poll_options)
       }]
     }
-    roy = Roy.new(config)
+    bender = Bender.new(config)
 
-    expect(roy.config).to eq(config)
-    expect(roy.watchers.count).to eq(config[:watchers].count)
+    expect(bender.config).to eq(config)
+    expect(bender.watchers.count).to eq(config[:watchers].count)
 
-    watchers = roy.watchers.collect(&:class)
+    watchers = bender.watchers.collect(&:class)
     config[:watchers].each do |watcher|
       expect(watchers).to include(watcher[:perform].to_s.classify.constantize)
     end
 
-    roy.start_watchers
+    bender.start_watchers
   end
 
 end

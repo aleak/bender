@@ -1,16 +1,16 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'roy/version'
+require 'bender/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "roy"
-  spec.version       = Roy::VERSION
+  spec.name          = "bender"
+  spec.version       = Bender::VERSION
   spec.authors       = ["Anthony Leak"]
   spec.email         = ["anthony.leak@gmail.com"]
-  spec.summary       = %q{Roy - Just a super guy.}
-  spec.description   = %q{We all love Roy.}
-  spec.homepage      = "https://www.github.com/aleak/roy"
+  spec.summary       = %q{Bender - Just a super guy.}
+  spec.description   = %q{We all love Bender.}
+  spec.homepage      = "https://www.github.com/aleak/bender"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")

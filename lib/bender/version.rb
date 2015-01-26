@@ -1,3 +1,3 @@
-module Roy
+module Bender
   VERSION = "0.0.1"
 end
