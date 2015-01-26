@@ -15,6 +15,10 @@ class Watcher
     })
   end
 
+  def name
+    @name ||= "#{Bender::Client.queue_prefix}-#{self.class.to_s.underscore}"
+  end
+
   def initialize(options)
     @options = options
     load_queue
@@ -26,7 +30,7 @@ class Watcher
 
   def load_queue
     @queue ||= Watcher.sqs.queues.create(
-      "#{Bender::Client.queue_prefix}-#{@options[:name]}",
+      self.name,
       @options[:create_options]
     )
   rescue Exception => ex
