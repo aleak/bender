@@ -3,20 +3,28 @@ require 'spec_helper'
 describe "Roy" do
 
   it "reads a config file" do
+    create_options = {:create_options => {
+      :visibility_timeout => 90,
+      :maximum_message_size => 262144
+    }}
+
+    poll_options = {:poll_options => {
+      :wait_time_seconds => 10,
+      :idle_timeout => 5
+    }}
+
     config = {
       :watchers => [{
         :perform => :watcher_life_cycle_hook,
         :queue => {
-          :name => "#{ENV['QUEUE_PREFIX']}-test",
-          :create_options => {
-            :visibility_timeout => 90,
-            :maximum_message_size => 262144
-          },
-          :poll_options => {
-            :wait_time_seconds => 10,
-            :idle_timeout => 5
-          },
-        }
+          :name => "#{Roy.queue_prefix}-watcher_life_cycle_hook",
+        }.merge(create_options).merge(poll_options)
+      },
+      {
+        :perform => :god_unmonitor,
+        :queue => {
+          :name => "#{Roy.queue_prefix}-god_unmonitor",
+        }.merge(create_options).merge(poll_options)
       }]
     }
     roy = Roy.new(config)

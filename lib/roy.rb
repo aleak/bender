@@ -52,7 +52,7 @@ class Roy
   end
 
   def stop_watchers
-    Roy.logger.info("Stopping watchers...")
+    puts "Stopping watchers..."
     @@keep_running = false
     ThreadsWait.all_waits(*@threads)
   end
