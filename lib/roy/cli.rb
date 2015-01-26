@@ -10,15 +10,16 @@ module Roy
     def initialize(args = [], opts = {}, config = {})
       super(args, opts, config)
 
-      if options[:config] && File.exists?(options[:config])
-        config_options = YAML.load_file(options[:config]).deep_symbolize_keys
-        @options = @options.symbolize_keys.merge(config_options)
+      if !File.exists?(options[:config])
+        puts "Cannot find #{options[:config]}."
+        exit
       end
 
+      config_options = YAML.load_file(options[:config]).deep_symbolize_keys
+      @options = @options.symbolize_keys.merge(config_options)
     end
 
     desc "start", "Start processing watchers."
-    option :queues,        :aliases => ["-q"], :type => :string, :default => "default"
     option :require,       :aliases => ["-r"], :type => :string
     option :pid_file,      :aliases => ["-p"], :type => :string
     option :interval,      :aliases => ["-i"], :type => :numeric
