@@ -18,6 +18,10 @@ class Roy
     @@logger ||= Logger.new(STDOUT)
   end
 
+  def self.queue_prefix
+    @@queue_prefix ||= "#{ENV['QUEUE_PREFIX']}-#{Socket.gethostname}"
+  end
+
   def initialize(config)
     @@keep_running = true
     @config = config
