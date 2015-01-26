@@ -17,13 +17,13 @@ describe "Roy" do
       :watchers => [{
         :perform => :watcher_life_cycle_hook,
         :queue => {
-          :name => "#{Roy.queue_prefix}-watcher_life_cycle_hook",
+          :name => "watcher_life_cycle_hook",
         }.merge(create_options).merge(poll_options)
       },
       {
         :perform => :god_unmonitor,
         :queue => {
-          :name => "#{Roy.queue_prefix}-god_unmonitor",
+          :name => "god_unmonitor",
         }.merge(create_options).merge(poll_options)
       }]
     }

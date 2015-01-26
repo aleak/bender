@@ -27,5 +27,6 @@ config = {
   }]
 }
 
-Roy.new(config).start_watchers
+roy = Roy.new(config)
+roy.watchers.last.publish(:task_or_group_name => :anthony)
 

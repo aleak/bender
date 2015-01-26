@@ -10,24 +10,23 @@ Dotenv.load
 
 class Roy
 
-  def self.keep_running?
-    @@keep_running
-  end
+  class << self
+    def keep_running?
+      @@keep_running
+    end
 
-  def self.logger
-    @@logger ||= Logger.new(STDOUT)
-  end
+    def logger
+      @@logger ||= Logger.new(STDOUT)
+    end
 
-  def self.queue_prefix
-    @@queue_prefix ||= "#{ENV['QUEUE_PREFIX']}-#{Socket.gethostname}"
+    def queue_prefix
+      @@queue_prefix ||= "#{ENV['QUEUE_PREFIX']}-#{Socket.gethostname}"
+    end
   end
 
   def initialize(config)
-    @@keep_running = true
     @config = config
     initialize_watchers
-    trap_signals
-    start_watchers
   end
 
   def trap_signals
@@ -40,14 +39,15 @@ class Roy
   end
 
   def start_watchers
-    Roy.logger.info("Press Ctrl+C to stop watchers")
-    Roy.logger.info("Starting Watchers...")
+    Roy.logger.info("Starting Watchers - Press Ctrl+C to stop watchers...")
+    @@keep_running = true
     @threads = []
     @watchers.each do |watcher|
       @threads << Thread.new do
         watcher.start
       end
     end
+    trap_signals
     ThreadsWait.all_waits(*@threads)
   end
 
