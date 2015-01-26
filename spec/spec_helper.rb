@@ -1,6 +1,6 @@
 require 'rspec'
 require 'active_support/inflector'
-require './lib/roy.rb'
+require './roy/lib/roy.rb'
 
 RSpec.configure do |c|
 

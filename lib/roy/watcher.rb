@@ -1,8 +1,8 @@
 module WatcherFactory
-  def self.create(config)
-    watcher_class = config[:perform].to_s
+  def self.create(config, default_config)
+    watcher_class = config[:name]
     require_relative "watchers/#{watcher_class}"
-    watcher_class.classify.constantize.new(config[:queue])
+    watcher_class.classify.constantize.new(default_config)
   end
 end
 
@@ -26,7 +26,7 @@ class Watcher
 
   def load_queue
     @queue ||= Watcher.sqs.queues.create(
-      "#{Roy.queue_prefix}-#{@options[:name]}",
+      "#{Roy::Client.queue_prefix}-#{@options[:name]}",
       @options[:create_options]
     )
   rescue Exception => ex
@@ -34,7 +34,7 @@ class Watcher
   end
 
   def subscribe
-    while Roy.keep_running? do
+    while Roy::Client.keep_running? do
       Roy.logger.info("Polling #{@queue.arn} for #{self.class.to_s}")
       @queue.poll(@options[:poll_options]) do |received_message|
         safe_perform(received_message.body)
@@ -45,7 +45,8 @@ class Watcher
   end
 
   def publish(message)
-    @queue.send_message(message.to_json)
+    message = message.to_json if message.is_a? Hash
+    @queue.send_message(message)
   rescue Exception => ex
     Roy.logger.error("#{self.class}: #{ex.message}#{ex.backtrace.join("\n")}")
   end

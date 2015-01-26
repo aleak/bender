@@ -1,0 +1,11 @@
+create_options:
+  visibility_timeout: 90
+  maximum_message_size: 262144
+
+poll_options:
+  wait_time_seconds: 10
+  idle_timeout: 5
+
+watchers:
+  - name: watcher_life_cycle_hook
+  - name: god_unmonitor
