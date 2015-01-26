@@ -26,29 +26,41 @@ class Watcher
 
   def load_queue
     @queue ||= Watcher.sqs.queues.create(
-      @options[:name],
+      "#{Roy.queue_prefix}-#{@options[:name]}",
       @options[:create_options]
     )
-  rescue Exception => e
-    Roy.logger.info(e.message)
+  rescue Exception => ex
+    Roy.logger.error("#{self.class}: #{ex.message}#{ex.backtrace.join("\n")}")
   end
 
   def subscribe
-    Roy.logger.info("Polling #{@queue.arn} for #{self.class.to_s}")
     while Roy.keep_running? do
+      Roy.logger.info("Polling #{@queue.arn} for #{self.class.to_s}")
       @queue.poll(@options[:poll_options]) do |received_message|
-        message = JSON.parse(received_message.body)
-        self.perform(message)
+        safe_perform(received_message.body)
       end
     end
-  rescue Exception => e
-    Roy.logger.info(e.message)
+  rescue Exception => ex
+    Roy.logger.error("#{self.class}: #{ex.message}#{ex.backtrace.join("\n")}")
   end
 
   def publish(message)
     @queue.send_message(message.to_json)
-  rescue Exception => e
-    Roy.logger.info(e.message)
+  rescue Exception => ex
+    Roy.logger.error("#{self.class}: #{ex.message}#{ex.backtrace.join("\n")}")
+  end
+
+  private
+
+  def safe_perform(json)
+    message = JSON.parse(json, :symbolize_names => true) rescue :invalid
+    if message == :invalid
+      Roy.logger.error("#{self.class}: Unable to parse message: #{json}")
+    else
+      self.perform(message)
+    end
+  rescue Exception => ex
+    Roy.logger.error("#{self.class}: Perform : #{ex.message}#{ex.backtrace.join("\n")}")
   end
 
 end
