@@ -14,6 +14,10 @@ class Roy
     @@keep_running
   end
 
+  def self.logger
+    @@logger ||= Logger.new(STDOUT)
+  end
+
   def initialize(config)
     @@keep_running = true
     @config = config
@@ -32,8 +36,8 @@ class Roy
   end
 
   def start_watchers
-    puts "Press Ctrl+C to stop watchers"
-    puts "Starting Watchers..."
+    Roy.logger.info("Press Ctrl+C to stop watchers")
+    Roy.logger.info("Starting Watchers...")
     @threads = []
     @watchers.each do |watcher|
       @threads << Thread.new do
@@ -44,7 +48,7 @@ class Roy
   end
 
   def stop_watchers
-    puts "Stopping watchers..."
+    Roy.logger.info("Stopping watchers...")
     @@keep_running = false
     ThreadsWait.all_waits(*@threads)
   end
@@ -61,7 +65,7 @@ class Roy
 
   def initialize_watchers
     @watchers = @config[:watchers].collect do |watcher_config|
-      puts "Loading #{watcher_config[:perform]}"
+      Roy.logger.info("Loading #{watcher_config[:perform]}")
       WatcherFactory.create(watcher_config)
     end
   end

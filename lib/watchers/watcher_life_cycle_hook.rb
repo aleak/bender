@@ -1,7 +1,7 @@
 class WatcherLifeCycleHook < Watcher
 
   def perform(message)
-    puts "Got message #{message}"
+    Roy.logger.info("Got message #{message}")
   end
 
 end

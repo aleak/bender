@@ -30,11 +30,11 @@ class Watcher
       @options[:create_options]
     )
   rescue Exception => e
-    puts e.message
+    Roy.logger.info(e.message)
   end
 
   def subscribe
-    puts "Polling #{@queue.arn} for #{self.class.to_s}"
+    Roy.logger.info("Polling #{@queue.arn} for #{self.class.to_s}")
     while Roy.keep_running? do
       @queue.poll(@options[:poll_options]) do |received_message|
         message = JSON.parse(received_message.body)
@@ -42,13 +42,13 @@ class Watcher
       end
     end
   rescue Exception => e
-    puts e.message
+    Roy.logger.info(e.message)
   end
 
   def publish(message)
     @queue.send_message(message.to_json)
   rescue Exception => e
-    puts e.message
+    Roy.logger.info(e.message)
   end
 
 end
