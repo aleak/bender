@@ -108,19 +108,23 @@ module Bender
     end
 
     def with_confirmation
-      name = "#{@queue_name}-cq-#{SecureRandom.uuid}"
+      name = "#{@queue_name}-ack-#{SecureRandom.uuid}"
       cq = Bender::Client.sqs.queues.create(name, self.config[:create_options])
 
       # send message
       yield({:ack_queue_name => name})
 
       Bender.logger.info("Polling #{cq.arn} for ack")
-      # TODO: Add timeout
-      cq.poll(wait_time_seconds: 2) do |received_message|
+
+      idle_timeout = 15.seconds
+      timeout = true
+      cq.poll(:wait_time_seconds => 2, :idle_timeout => idle_timeout) do |received_message|
         # ack'd
+        timeout = false
         break
       end
 
+      Bender.logger.warn("Ack not received on #{cq.arn} after #{idle_timeout} seconds.") if timeout
     rescue Exception => ex
       Bender.logger.error("#{ex.message}#{ex.backtrace.join("\n")}")
     ensure
