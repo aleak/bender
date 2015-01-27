@@ -20,10 +20,6 @@ module Bender
         @@keep_running
       end
 
-      def queue_prefix
-        @@queue_prefix ||= "#{ENV['QUEUE_PREFIX']}-#{Socket.gethostname}"
-      end
-
       def sqs
         @@sqs ||= AWS::SQS.new({
           :access_key_id => ENV['AWS_ACCESS_KEY'],
@@ -33,9 +29,24 @@ module Bender
       end
     end
 
-    def initialize(config)
+    def initialize(hostname, config = {})
       @config = config
-      initialize_watchers
+      @queue_name = "#{self.queue_prefix}-#{hostname}"
+
+      @config[:create_options] ||= {
+        :visibility_timeout => 90,
+        :maximum_message_size => 262144
+      }
+
+      @config[:poll_options] ||= {
+        :wait_time_seconds => 10,
+        :idle_timeout => 5
+      }
+      initialize_watchers if @config[:watchers]
+    end
+
+    def queue_prefix
+      @queue_prefix ||= self.config[:queue_prefix] || "#{ENV['QUEUE_PREFIX']}"
     end
 
     def trap_signals
@@ -67,7 +78,7 @@ module Bender
     end
 
     def publish(watcher, message, ack = false)
-      sent = @watchers.select{|w| w.class.to_s.underscore == watcher}.collect do |watcher|
+      @watchers.select{|w| w.class.to_s.underscore == watcher.to_s}.collect do |watcher|
         if ack
           with_confirmation do |cq|
             watcher.publish(message, cq)
@@ -75,8 +86,8 @@ module Bender
         else
           watcher.publish(message)
         end
+        Bender.logger.info("Sent message to #{watcher.name}")
       end
-      Bender.logger.info("Sent #{sent.size} message(s)")
     end
 
     def config
@@ -92,12 +103,12 @@ module Bender
     def initialize_watchers
       @watchers = @config[:watchers].collect do |watcher_config|
         Bender.logger.info("Loading #{watcher_config[:name]}")
-        WatcherFactory.create(watcher_config, self.config)
+        WatcherFactory.create(@queue_name, watcher_config, self.config)
       end
     end
 
     def with_confirmation
-      name = "#{Bender::Client.queue_prefix}-cq-#{SecureRandom.uuid}"
+      name = "#{@queue_name}-cq-#{SecureRandom.uuid}"
       cq = Bender::Client.sqs.queues.create(name, self.config[:create_options])
 
       # send message

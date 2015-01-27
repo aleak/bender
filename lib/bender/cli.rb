@@ -20,6 +20,7 @@ module Bender
     end
 
     desc "start", "Start processing watchers."
+    option :hostname,      :aliases => ["-h"], :type => :string
     option :require,       :aliases => ["-r"], :type => :string
     option :pid_file,      :aliases => ["-p"], :type => :string
     option :interval,      :aliases => ["-i"], :type => :numeric
@@ -30,18 +31,23 @@ module Bender
     def start
       load_enviroment(options[:require])
       opts = @options.symbolize_keys.slice(:timeout, :interval, :daemon, :pid_file)
-      Bender::Client.new(@options).start_watchers
+      Bender::Client.new(options[:hostname] || Socket.gethostname, @options).start_watchers
     end
 
     desc "publish", "Publish a message."
-    option :watcher, :aliases => ["-w"], :type => :string, :required => true
-    option :message, :aliases => ["-m"], :type => :string, :required => true
-    option :ack,     :aliases => ["-a"], :type => :boolean, :required => false, :default => false
+    option :hostname, :aliases => ["-h"], :type => :string
+    option :watcher,  :aliases => ["-w"], :type => :string, :required => true
+    option :message,  :aliases => ["-m"], :type => :string, :required => true
+    option :ack,      :aliases => ["-a"], :type => :boolean, :required => false, :default => false
 
     def publish
       load_enviroment(options[:require])
       opts = @options.symbolize_keys.slice(:timeout, :interval, :daemon, :pid_file)
-      Bender::Client.new(@options).publish(options[:watcher], options[:message], options[:ack])
+      Bender::Client.new(options[:hostname] || Socket.gethostname, @options).publish(
+        options[:watcher],
+        options[:message],
+        options[:ack]
+      )
     end
 
     protected

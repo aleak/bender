@@ -1,18 +1,19 @@
 module WatcherFactory
-  def self.create(config, default_config)
-    watcher_class = config[:name]
+  def self.create(queue_name, config, default_config)
+    watcher_class = config[:name].to_s
     require "bender/watchers/#{watcher_class}"
-    watcher_class.classify.constantize.new(default_config)
+    watcher_class.classify.constantize.new(queue_name, default_config)
   end
 end
 
 class Watcher
 
   def name
-    @name ||= "#{Bender::Client.queue_prefix}-#{self.class.to_s.underscore}"
+    @name ||= "#{@queue_name}-#{self.class.to_s.underscore}"
   end
 
-  def initialize(options)
+  def initialize(queue_name, options)
+    @queue_name = queue_name
     @options = options
     load_queue
   end
