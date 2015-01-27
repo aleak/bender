@@ -36,11 +36,12 @@ module Bender
     desc "publish", "Publish a message."
     option :watcher, :aliases => ["-w"], :type => :string, :required => true
     option :message, :aliases => ["-m"], :type => :string, :required => true
+    option :ack,     :aliases => ["-a"], :type => :boolean, :required => false, :default => false
 
     def publish
       load_enviroment(options[:require])
       opts = @options.symbolize_keys.slice(:timeout, :interval, :daemon, :pid_file)
-      Bender::Client.new(@options).publish options[:watcher], options[:message]
+      Bender::Client.new(@options).publish(options[:watcher], options[:message], options[:ack])
     end
 
     protected

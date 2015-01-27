@@ -3,6 +3,7 @@ require 'thwait'
 require 'dotenv'
 require 'active_support/inflector'
 require 'bender/watcher'
+require 'securerandom'
 
 Dotenv.load
 
@@ -21,6 +22,14 @@ module Bender
 
       def queue_prefix
         @@queue_prefix ||= "#{ENV['QUEUE_PREFIX']}-#{Socket.gethostname}"
+      end
+
+      def sqs
+        @@sqs ||= AWS::SQS.new({
+          :access_key_id => ENV['AWS_ACCESS_KEY'],
+          :secret_access_key => ENV['AWS_SECRET_ACCESS'],
+          :region => ENV['AWS_REGION']
+        })
       end
     end
 
@@ -57,9 +66,15 @@ module Bender
       ThreadsWait.all_waits(*@threads)
     end
 
-    def publish(watcher, message)
+    def publish(watcher, message, ack = false)
       sent = @watchers.select{|w| w.class.to_s.underscore == watcher}.collect do |watcher|
-        watcher.publish(message)
+        if ack
+          with_confirmation do |cq|
+            watcher.publish(message, cq)
+          end
+        else
+          watcher.publish(message)
+        end
       end
       Bender.logger.info("Sent #{sent.size} message(s)")
     end
@@ -79,6 +94,26 @@ module Bender
         Bender.logger.info("Loading #{watcher_config[:name]}")
         WatcherFactory.create(watcher_config, self.config)
       end
+    end
+
+    def with_confirmation
+      name = "#{Bender::Client.queue_prefix}-cq-#{SecureRandom.uuid}"
+      cq = Bender::Client.sqs.queues.create(name, self.config[:create_options])
+
+      # send message
+      yield({:ack_queue_name => name})
+
+      Bender.logger.info("Polling #{cq.arn} for ack")
+      # TODO: Add timeout
+      cq.poll(wait_time_seconds: 2) do |received_message|
+        # ack'd
+        break
+      end
+
+    rescue Exception => ex
+      Bender.logger.error("#{ex.message}#{ex.backtrace.join("\n")}")
+    ensure
+      cq.delete if cq
     end
 
   end

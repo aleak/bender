@@ -7,13 +7,6 @@ module WatcherFactory
 end
 
 class Watcher
-  def self.sqs
-    @@sqs ||= AWS::SQS.new({
-      :access_key_id => ENV['AWS_ACCESS_KEY'],
-      :secret_access_key => ENV['AWS_SECRET_ACCESS'],
-      :region => ENV['AWS_REGION']
-    })
-  end
 
   def name
     @name ||= "#{Bender::Client.queue_prefix}-#{self.class.to_s.underscore}"
@@ -29,7 +22,7 @@ class Watcher
   end
 
   def load_queue
-    @queue ||= Watcher.sqs.queues.create(
+    @queue ||= Bender::Client.sqs.queues.create(
       self.name,
       @options[:create_options]
     )
@@ -48,9 +41,14 @@ class Watcher
     Bender.logger.error("#{self.class}: #{ex.message}#{ex.backtrace.join("\n")}")
   end
 
-  def publish(message)
-    message = message.to_json if message.is_a? Hash
-    @queue.send_message(message)
+  def publish(message, ack = nil)
+    unless message.is_a?(Hash)
+      message = JSON.parse(message)
+    end
+
+    message.merge!(ack) if ack
+
+    @queue.send_message(message.to_json)
   rescue Exception => ex
     Bender.logger.error("#{self.class}: #{ex.message}#{ex.backtrace.join("\n")}")
   end
@@ -62,7 +60,13 @@ class Watcher
     if message == :invalid
       Bender.logger.error("#{self.class}: Unable to parse message: #{json}")
     else
+      # requires an ack ?
+      ack = message.delete(:ack_queue_name)
       self.perform(message)
+      if ack
+        Bender.logger.info("#{self.class}: Ack'ing on #{ack}")
+        Bender::Client.sqs.queues.named(ack).send_message({:ack => true}.to_json)
+      end
     end
   rescue Exception => ex
     Bender.logger.error("#{self.class}: Perform : #{ex.message}#{ex.backtrace.join("\n")}")
