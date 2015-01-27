@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec", '~> 2.12'
 
   spec.add_runtime_dependency 'aws-sdk-v1', '~> 1.61'
-  spec.add_runtime_dependency 'activesupport', '~> 4.2'
+  spec.add_runtime_dependency 'activesupport', '~> 4.0'
   spec.add_runtime_dependency 'dotenv', '~> 1.0'
   spec.add_runtime_dependency 'thor', '~> 0.19'
 
