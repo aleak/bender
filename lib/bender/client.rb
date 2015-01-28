@@ -1,4 +1,4 @@
-require 'aws-sdk-v1'
+require 'aws-sdk'
 require 'thwait'
 require 'dotenv'
 require 'active_support/inflector'
