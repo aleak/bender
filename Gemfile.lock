@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bender (0.2.0)
+    bender (0.2.5)
       activesupport (~> 4.0)
       aws-sdk-v1 (~> 1.61)
       dotenv (~> 1.0)

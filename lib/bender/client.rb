@@ -100,6 +100,11 @@ module Bender
 
     private
 
+    def safe_queue_name(name, with_uniqe = false)
+      name = "#{name}#{SecureRandom.uuid}" if with_uniqe
+      name[0..79]
+    end
+
     def initialize_watchers
       @watchers = @config[:watchers].collect do |watcher_config|
         Bender.logger.info("Loading #{watcher_config[:name]}")
@@ -108,7 +113,7 @@ module Bender
     end
 
     def with_confirmation
-      name = "#{@queue_name}-ack-#{SecureRandom.uuid}"
+      name = safe_queue_name("#{@queue_name}-ack-", true)
       cq = Bender::Client.sqs.queues.create(name, self.config[:create_options])
 
       # send message

@@ -9,7 +9,7 @@ end
 class Watcher
 
   def name
-    @name ||= "#{@queue_name}-#{self.class.to_s.underscore}"
+    @name ||= safe_queue_name("#{@queue_name}-#{self.class.to_s.underscore}")
   end
 
   def initialize(queue_name, options)
@@ -55,6 +55,10 @@ class Watcher
   end
 
   private
+
+  def safe_queue_name(name)
+    name[0..79]
+  end
 
   def safe_perform(json)
     message = JSON.parse(json, :symbolize_names => true) rescue :invalid
