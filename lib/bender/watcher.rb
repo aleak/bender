@@ -50,8 +50,10 @@ class Watcher
     message.merge!(ack) if ack
 
     @queue.send_message(message.to_json)
+    true
   rescue Exception => ex
     Bender.logger.error("#{self.class}: #{ex.message}#{ex.backtrace.join("\n")}")
+    false
   end
 
   private

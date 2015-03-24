@@ -78,16 +78,18 @@ module Bender
     end
 
     def publish(watcher, message, ack = false)
+      success = false
       @watchers.select{|w| w.class.to_s.underscore == watcher.to_s}.collect do |watcher|
         if ack
-          with_confirmation do |cq|
+          success = with_confirmation do |cq|
             watcher.publish(message, cq)
           end
         else
-          watcher.publish(message)
+          success = watcher.publish(message)
         end
         Bender.logger.info("Sent message to #{watcher.name}")
       end
+      success
     end
 
     def config
@@ -130,8 +132,10 @@ module Bender
       end
 
       Bender.logger.warn("Ack not received on #{cq.arn} after #{idle_timeout} seconds.") if timeout
+      !timeout
     rescue Exception => ex
       Bender.logger.error("#{ex.message}#{ex.backtrace.join("\n")}")
+      false
     ensure
       cq.delete if cq
     end
